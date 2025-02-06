@@ -1,0 +1,109 @@
+Docker installation and guide,
+
+install docker dependency,
+	--> Java
+
+Commands :
+
+	sudo su
+
+	yum install java-11 	# Java have to install,
+
+	yum install docker -y 	# Docker installation,
+
+	docker --version 	# to check version,
+
+	docker pull httpd	# Pull the image from Docker, 
+
+	docker images 		# Display on docker downloaded containers,
+ 
+	docker ps 		# Display on Running containers,
+
+	docker ps -a 		# Running and Stopped status, ps- mean by process, -a mean by all,
+
+	docker run -d -p 70:80 saravanancseslm/resume	 # -d detach mode running background, -p Port number 70, 80 Respect port number ex, httpd running 80,  Docker name 										saravanancseslm/resume,
+
+	docker start container id 	# Start the container image
+
+	docker stop container id 	# stop the running container image
+
+	docker rm container id		# Remove the container image
+
+	docker exec -it "container id" /bin/bash	# Entering the container inside,
+
+	
+
+
+Creating Docker files : for Apache or HTTPD web application
+
+	# Need to create Docker file, same file should come on outside project Directory,
+
+	# Docker file fist letter should be Capital,
+
+	vi Dockerfile
+
+	# Download httpd latest package
+	FROM httpd:latest
+	 
+	# Name should add
+	MAINTAINER "Saravanan"	 
+
+	# It will Copy a file
+	COPY ./Resume_V1/* /usr/local/apache2/htdocs	
+ 		
+	docker build -t my-httpd-app .  # Build the docker image name my-httpd-app, one Dot have to give,
+
+	docker images 		# Display on docker containers,
+
+	docker tag my-httpd-app saravanancseslm/resuem01
+
+	docker login
+
+	docker push saravanancseslm/resuem01
+
+	docker run -d -p -n  80:80 imagename
+
+
+Creating Docker file for Java Application,
+
+	# Need to create Docker file, same file should come on outside project Directory,
+
+	# Docker file fist letter should be Capital,
+
+	vi Dockerfile
+
+	# Use the official OpenJDK image as the base image
+	FROM openjdk:17-jdk-slim
+
+	# Set the working directory in the container
+	WORKDIR /app
+
+	# Copy the packaged JAR file into the container
+	COPY target/HelloWorld-1.0-SNAPSHOT-jar-with-dependencies.jar /app/HelloWorld.jar
+
+	# Define the entry point to run the application
+	CMD ["java", "-jar", "/app/HelloWorld.jar"]
+ 
+	docker build -t Helloworld
+
+	docker run Helloworld
+
+	
+
+
+
+
+Automation Jenkins,
+
+	docker stop helloworld_container || true;
+	docker rm -f helloworld_continer || true;
+	docker image rm -f helloworld_130ct || true;
+	docker build -t helloworld_130ct .;
+	docker tag petshop2 sravanan/helloworld_130ct;
+	docker login -u Saravanan -p *****;
+	docker push Saravanan/helloworld_130ct;
+	docker run -d --name hello -p 8080:80 Saravanan/helloworld_130ct;
+
+
+
+

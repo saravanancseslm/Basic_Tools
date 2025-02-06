@@ -1,0 +1,55 @@
+Jenkins installation and guide,
+
+Manual mode configuration, required java also
+
+	--> sudo yum update –y 		-- Upgrading package,
+
+
+Add the Jenkins repo using the following command:
+
+	--> sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo 		-- Import a key file from Jenkins-CI to enable installation from the package,
+
+	--> sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key,
+
+	--> sudo yum upgrade -y 		-- Upgrading rpm through yum,
+
+	--> sudo dnf install java-17-amazon-corretto -y 	-- Install Java (Amazon Linux 2023),
+
+	--> sudo yum install jenkins -y		-- Install Jenkins,
+
+	--> sudo systemctl enable Jenkins	-- Enable the Jenkins service to start at boot,
+
+	--> sudo systemctl start Jenkins	-- Start Jenkins as a service,
+
+	--> sudo systemctl status Jenkins 	-- You can check the status of the Jenkins service using the command,
+
+	--> IP:8080				-- go to browser instance ip or loopback ip with port number Jenkins login, Default Jenkins will run 8080 Port number
+
+	--> cat /var/jenkins_home/secrets/initialAdminPassword	-- Using cat command to read password copy and past the password screen 
+
+
+
+Jenkins docker image configuration, 
+	
+	Pre requirements,
+		--> Java,
+		--> Docker,
+
+	--> sudo su
+
+	--> yum install java-11 -y
+
+	--> yum install docker -y
+
+	--> systemctl start docker
+
+	--> systemctl enable docker 
+
+	--> systemctl status docker
+
+	--> docker run -p 8080:8080 -p 50000:50000 jenkins/jenkins:lts  -- it will pull the imager from central docker repository -p Respective ports,
+
+	--> instance ip:8080 			-- Open browser and search instance ip:8080, will get a login page, 
+
+	--> cat /var/jenkins_home/secrets/initialAdminPassword	-- Using cat command to read password copy and past the password screen, Password it will display on the screen

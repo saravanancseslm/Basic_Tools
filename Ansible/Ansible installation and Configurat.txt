@@ -1,0 +1,213 @@
+Ansible installation and Configuration guide,
+
+
+Launch 4 instance for practice, 
+
+	--> Rename instance on Ansible_Master, Ansible_Slave01_P01, Ansible_Slave02_P02, Ansible_Slave03_P03,
+
+	--> While instance login time using Key pair downloaded form my login Amazon_Linux_Key.pem, Private Key,  
+
+	--> Use commands maximum Admin mode as a root account, or sudo after execute command it will work,
+
+	--> 2 step need to do 1st establishing connection master to all nodes, 
+
+
+# Login on Ansible_Master,
+
+	cd /root/.ssh
+
+	ls
+	
+# authorized_keys we can able to find, this file is called as public key,
+
+	cat authorized_keys
+
+# AMI Login authorized key while launching instance downloading key is called as Private Key,
+
+# Now try to login Ansible_Master to Ansible_Slave01_P01,any Slave, it get add the Permanently slave instances,
+
+	# ssh -i Amazon_Linux_Key.pem ec2-user@Ansible_Slave01_P01 pub ip	
+
+	Ex:
+
+	ssh -i Amazon_Linux_Key.pem ec2-user@52.204.54.141
+	ssh -i Amazon_Linux_Key.pem ec2-user@34.227.13.146
+	ssh -i Amazon_Linux_Key.pem ec2-user@34.201.128.215
+
+	exit
+----------------------------------------------------------------------------------------------------------------------------
+
+1. Establishing connection master to all nodes,
+
+----------------------------------------------------------------------------------------------------------------------------
+
+	
+# Ansible_Master to generate public key, master 52.6.220.120  
+
+	ssh-keygen
+	
+	cd /root/.ssh
+
+	ls -ltr
+
+	# 2 file has created, id_rsa and id_rsa.pub
+
+	# now need to copy id_rsa.pub inside key on node instances vi /root/.ssh/authorized_keys past same files,
+
+	ssh -i Amazon_Linux_Key.pem ec2-user@44.202.118.173
+
+	vi /root/.ssh/authorized_keys
+
+	exit
+
+	# Now came back on Master (54.166.25.150) instance, like all 3 instance need to do
+
+	ssh username@ipaddress
+	
+	ssh ec2-user@52.204.54.141
+
+	# Master to node able to connect without passwd using below command,
+
+	ssh ec2-user@44.202.118.173
+	ssh ec2-user@35.174.111.251
+	ssh ec2-user@52.90.88.19
+	ssh ec2-user@3.87.232.236
+
+
+-----------------------------------------------------------------------------------------------------------------------------	
+
+2. Configure the Ansible server
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+	# Command to install ansible
+
+	yum install ansible -y
+
+	ansible --version
+
+	# updating hosts for details, need to create hosts file is called as inventory
+	
+	vi /etc/ansible/hosts
+
+	[project]
+	44.202.118.173
+	35.174.111.251
+	52.90.88.19
+	3.87.232.236
+-----------------------------------------------------------------------------------------------------------------------------
+	
+	# check the RAM utilization,
+
+	ansible all -i hosts -m shell -a "free -m"
+
+	# check the disk utilization,
+
+	ansible all -i hosts -m shell -a "df -h"
+	
+	# To remove ansible,
+
+	sudo yum remove ansible
+
+-----------------------------------------------------------------------------------------------------------------------------
+	
+# how to create and run ansible playbooks
+
+	vi /etc/ansible/docker.yml
+---
+- hosts: all
+  become: true
+  tasks:
+   - name: Installing docker
+     ansible.builtin.yum:
+       name: docker
+       state: latest
+       
+   - name: start docker
+     service:
+        name: docker 
+        state: started   
+	
+
+	# Run ansible playbooks
+	
+	ansible-playbook -i hosts docker.yml
+
+	vi /etc/ansible/remove_docker.yml
+
+------------------------------------------------------------------------------------------------------------------------------
+
+- hosts: all
+  become: true
+  tasks:
+   - name: Removeing docker
+     ansible.builtin.yum:
+       name: docker
+       state: absent
+
+	ansible-playbook -i "hosts" "file.yml"
+
+	Examples,
+	
+	ansible-playbook -i hosts httpd_yum.yml
+
+	
+	vi /etc/ansible/node-exporter.yml
+
+------------------------------------------------------------------------------------------------------------------------------
+
+- name: Deploy Prometheus Node Exporter on all nodes
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install Docker
+      ansible.builtin.yum:
+        name: docker
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Install Docker on Ubuntu
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Ensure Docker service is started and enabled
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Pull Prometheus Node Exporter image
+      community.docker.docker_image:
+        name: prom/node-exporter:v1.2.2
+        source: pull
+
+    - name: Run Prometheus Node Exporter container
+      community.docker.docker_container:
+        name: node-exporter
+        image: prom/node-exporter:v1.2.2
+        state: started
+        restart_policy: always
+        ports:
+          - "9100:9100"
+	
+	ansible-playbook -i hosts node-exporter.yml
+
+----------------------------------------------------------------------------------------------------------------------------
+
+
+	
+ 
+
+
+
+
+
+
+
+
+
+
+

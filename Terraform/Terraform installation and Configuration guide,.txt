@@ -1,0 +1,148 @@
+Terraform installation and Configuration guide,
+
+------------------------------------------------------------------------------------------------------------------------
+Terraform Requirements
+
+	--> All supported code tf format should come hashicorp configuration called as HCL code,
+
+	--> IT in JSON format
+
+------------------------------------------------------------------------------------------------------------------------
+
+Configuration in Amazon AMI,
+
+
+#!/bin/bash
+
+# Updating yum -y
+
+yum update -y
+
+# Downloading terraform applications,
+
+yum install -y yum-utils shadow-utils
+yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+yum -y install terraform
+
+# Check the Terraform Version,
+
+Terrafom --version
+
+# Creating directory,
+
+mkdir Terraform
+
+cd /home/ec2-user/Terraform
+
+#-----------------------------------------------------------------------------------------------------------------------
+
+# Now write the code, it should save on provider.tf
+# It will providing the Amazon login,
+
+cat <<EOF > provider.tf
+provider "aws" {
+  region     = "us-east-1"
+  access_key = ""
+  secret_key = ""
+}
+EOF
+
+
+# Now write the code, it should save on main.tf
+# It will providing the whare need to run the project, what operation should perform all the options should provide,
+ 
+cat <<EOF > main.tf
+resource "aws_instance" "Terraform_Auto" {
+  ami 			 ="ami-0df8c184d5f6ae949"
+  instance_type  ="t2.micro"
+  key_name   ="Amazon_Linux_Key"
+  security_groups = ["Open_Ports"]
+  user_data =file("Basic.sh")
+  
+  tags ={
+  Name           = "Terraform_Auto"
+  }
+ }
+EOF
+
+
+# Now write the code, it should save on outputs.tf
+# It will providing the instance details,like Pub and Private ips, 
+
+cat <<EOF > outputs.tf
+output "public_ip" {
+	description = "The public IP address asigned to the instance"
+	value		= try(aws_instance.Terraform_Auto.public_ip, "")
+}  
+output "public_dns" {
+	description = "The public IP address asigned to the instance"
+	value		= try(aws_instance.Terraform_Auto.public_dns, "")
+}
+output "private_ip" {
+	description = "The public IP address asigned to the instance"
+	value		= try(aws_instance.Terraform_Auto.private_ip, "")
+}
+EOF
+
+#-----------------------------------------------------------------------------------------------------------------------
+
+# Writing some basic scripts, it should save on Basic.sh
+
+cat <<EOF > Basic.sh
+#!/bin/bash
+mkdir Scripts
+cd Scripts
+cat <<EOF > if-then.sh
+#!/bin/bash
+
+echo Check the Value Equal 100
+echo enter the values
+read val
+count=100
+if [ $count -eq $val ]
+then
+	echo Count is Equal then 100
+else
+	echo Count is NOT Equal then 100
+fi
+EOF
+chmod +x if-then.sh
+
+#-----------------------------------------------------------------------------------------------------------------------
+
+# Executing the coding's,
+
+terraform init
+
+# it will read and validate inside files,
+
+terraform plan
+
+# now give a apply, it will execute the code,
+
+terraform apply -y
+
+# Output will get
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+private_ip = "172.31.92.121"
+public_dns = "ec2-3-87-24-121.compute-1.amazonaws.com"
+public_ip = "3.87.24.121"
+
+#----------------------------------------------------------------------------------------------------------------------- 
+
+# now will destroy the all application
+
+terraform show
+
+terraform plan -destroy
+
+terraform destroy -auto-approve
+
+
+
+
+

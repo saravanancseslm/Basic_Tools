@@ -1,0 +1,47 @@
+Git installation and guide,
+
+ --> Launch instance
+ --> Amazon AMI
+	sudo su --> change to root mode
+	yum update -y --> updating yum
+	yum install git -y --> installing git
+	git --version --> to check version,
+
+--> Ubuntu 
+	sudo su --> change to root mode
+	apt-get update -y --> updating Package installer
+	apt-get install git -y --> installing git
+	git --version --> to check version,
+
+--> Windows
+	Download from latest executable file version through internet,
+	install git installer,
+		--> Right click on mouse go to -> Open GIT Bash here
+		--> CLI mode we can able to work
+	Using windows command prompt
+		--> Need to add environment variable,
+			C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Git
+
+--> Git Commands,
+	 1) git init --> it will initialize repository
+	 2) git add --all --> to add on all files adds a change in the working directory to the staging area
+		git add filename, filename, --> it add particular files
+	 3) git commit -m "message" --> commit the changes
+	 4) git push --> push the changes to remote server
+ 	 5) git pull --> pull the changes to remote server
+		git clone "repolink" --> clone the repo for first time 
+	    How to Clone a Specific Branch
+	    option1
+		git clone --branch <branchname> <remote-repo-url>
+		git clone -b <branchname> <remote-repo-url>
+	 6) git branch --> check the branches
+		git checkout -b "branch name" --> checkout to new branch
+		git checkout "another_branch" --> switch to other branch
+		git branch -d "branchname" --> delete the branch
+	7) git push --set-upstream origin "branchname"
+
+
+		
+
+
+

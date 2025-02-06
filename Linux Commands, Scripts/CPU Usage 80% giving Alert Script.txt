@@ -1,0 +1,46 @@
+CPU Usage 80% giving Alert Script
+
+#!/bin/bash
+
+# Threshold for CPU usage
+THRESHOLD=80
+
+# Get the CPU usage as a whole number
+CPU_USAGE=$(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4}' | cut -d. -f1)
+
+# Check if the CPU usage exceeds the threshold
+if [ "$CPU_USAGE" -gt "$THRESHOLD" ]; then
+    echo "WARNING: CPU usage is at ${CPU_USAGE}% (Threshold: ${THRESHOLD}%)"
+    echo "CPU usage has exceeded the threshold. Current usage: ${CPU_USAGE}%" | mail -s "CPU Usage Alert" your_email@example.com
+fi
+
+
+
+rm -rf file name
+
+
+Jenkin Server 
+
+#!/bin/bash
+yum install java -y
+wget https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.2/bin/apache-tomcat-11.0.2.tar.gz
+tar -zvxf apache-tomcat-11.0.2.tar.gz
+cd ec2-user/apache-tomcat-11.0.2/bin
+./startup.sh
+
+
+#!/bin/bash
+
+THRESHOLD=80
+
+while true; do
+  # Get the CPU usage (100 - idle percentage)
+  CPU_USAGE=$(top -bn1 | grep "Cpu(s)" | awk '{print 100 - $8}')
+  CPU_USAGE=${CPU_USAGE%.*} # Convert to an integer for comparison
+
+  if [ "$CPU_USAGE" -gt "$THRESHOLD" ]; then
+    echo "ALERT: CPU usage is at ${CPU_USAGE}%, exceeding ${THRESHOLD}%!"
+  fi
+
+  sleep 5 # Check every 5 seconds
+done

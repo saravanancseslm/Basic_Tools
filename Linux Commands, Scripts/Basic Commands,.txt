@@ -1,0 +1,25 @@
+Basic Commands,
+
+Basic,
+
+ls 			- to List he files,
+
+ls -ltr			- List with full option Read, Wright, Execute, group, owner,
+
+cp			- Copy a files from to cp /home/ec2-user/test.txt /home/ec2-user/
+
+				using * it will copy all the files inside directory,
+
+mv			- Move file from to location mv /home/ec2-user/test.txt /home/ec2-user/
+
+				using * it will copy all the files inside directory,
+
+rm			- Delete the file or directory, rm -rf test.text   rf remove force fully,
+
+
+
+Network,
+
+ping			- check the ip is pinging ping 8.8.8.8
+
+netstat -tulp		- it will shop which port open on TCP/UDP

@@ -1,0 +1,163 @@
+Prometheus and Grafana. Prometheus port 9090, Grafana port 3000, node-exporter 9100
+
+----------------------------------------------------------------------------------------------------------------------
+
+Pre installation on nodes required docker and node-exporter,
+
+# node-exporter configuration,
+
+docker run -d -p 9100:9100 quay.io/prometheus/node-exporter:v1.2.2
+
+# Running browser host ip:9100
+
+-----------------------------------------------------------------------------------------------------------------------
+
+#  Prometheus Manual configuration, 
+
+# Download the setup from Prometheus site 
+
+wget https://github.com/prometheus/prometheus/releases/download/v3.1.0/prometheus-3.1.0.linux-amd64.tar.gz
+
+tar -xvzf prometheus-3.1.0.linux-amd64.tar.gz
+
+cd prometheus-3.1.0.linux-amd64
+
+# Use vi editor update the host and target information, if any error will come it not run
+
+global:
+  scrape_interval: 15s 
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+  - job_name: "nodes"
+    static_configs:
+      - targets: ["44.202.118.173:9100", "35.174.111.251:9100", "52.90.88.19:9100" , "3.87.232.236:9100"]
+
+# Start the Prometheus server
+
+./prometheus --config.file=prometheus.yml
+
+# Monitor Targets
+	Navigate to Status > Targets in the web interface to see the list of configured targets.
+	Ensure all targets are "UP." If a target is down, check its configuration and availability.
+
+
+# Check the process running,
+
+ps aux | grep Prometheus
+
+# check memory,
+
+free -h 
+
+# want to update any nodes to edit Prometheus.yml file, after restart service, kill the process and start the process
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+
+# Grafana installation through docker container, port 3000
+
+docker run -d --name=grafana -p 3000:3000 grafana/grafana
+
+
+# running on Host ip and port
+
+	1) Login on id: admin passwd: admin, after change password
+
+	2) Configure Prometheus server 
+
+		2.1) go to Connections --> Data Source --> select Prometheus add on Prometheus server URL http://server ip :9090/
+ 
+		2.2) Save and Test have to give it should come success,
+
+	3) Creating Dashboard,
+
+		3.1) Dashboards --> New --> New Folder
+
+		3.2) import from internet also or create own design, best downloading to internet search for 1860 --> Load, It displays entire process
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+# Docker Required,
+
+yum install docker -y
+
+systemctl enable docker
+
+systemctl start docker
+
+
+# Create yml file Prometheus directory inside
+
+mkdir Prometheus
+
+cd Prometheus
+
+vi Prometheus.yml
+
+
+# Copy and past below code
+
+# yml file,
+
+-------------------------------------------------------------------------------------------------
+# my global config
+global:
+  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+# Here it's Prometheus itself.
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+      
+  - job_name: "nodes"
+    static_configs:
+      - targets: ["node1ip:9100", "node2ip:9100"] 
+  - job_name: "project1"
+    static_configs:
+      - targets: ["node3ip:9100"]  
+
+
+
+Example
+
+global:
+  scrape_interval: 15s 
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+  - job_name: "nodes"
+    static_configs:
+      - targets: ["44.211.213.154:9100", "54.173.45.141:9100"]
+      job_name: "project1"
+    static_configs:
+      - targets: ["18.233.10.139:9100"]
+
+
+-------------------------------------------------------------------------------------------------
+
+# Pulling the Docker image for Prometheus
+
+docker run -d -p 9090:9090 -v /home/ec2-user/prometheus:/etc/prometheus prom/prometheus
+
+# Need to check,
+
+docker ps -a
+
+# go to browser check instance ip:9090 page get reach,
+
+# Now to configure nodes, want to monitor system called nodes, 
+
+# Using Node Explorer, need to run through docker,
+	
+	# Nodes also install Docker, now current project 3 node system configuring 
+
+docker run -d -p 9100:9100 quay.io/prometheus/node-exporter:v1.2.2
+
+
+
+
+

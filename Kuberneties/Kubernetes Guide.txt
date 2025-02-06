@@ -1,0 +1,44 @@
+Kubernetes Guide
+
+# To install AWS CLI
+
+https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+
+ Open Power Shell on Windows
+
+	go to downloaded location past the command 
+
+	msiexec.exe /i https://awscli.amazonaws.com/AWSCLIV2.msi
+
+	aws --version
+
+Open CMD Prompt type,
+
+	aws configure
+	
+	have to provide details
+
+	format json format,
+
+	Ex
+	aws configure set aws_access_key_id Enter your valid;
+
+	aws configure set aws_secret_access_key Enter your valid;
+
+	aws configure set default.region ap-southeast-1;
+
+	aws configure set default.output json;
+
+# To fetch all my configuration on to my kubectl
+
+aws eks --region ap-southeast-1 update-kubeconfig --name K8_Vinod
+
+
+# To Install kubectl , refer below link
+
+https://docs.aws.amazon.com/eks/latest/userguide/install-kubectl.html
+
+# aws configure (Update all the details here like Keys)
+
+aws configure
+

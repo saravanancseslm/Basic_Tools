@@ -1,0 +1,296 @@
+Scripting, Saran@6641
+
+------------------------------------------------------------------------------------------------------------------------
+Basic Admin Scripts,
+------------------------------------------------------------------------------------------------------------------------
+vi.basic_admin.sh
+
+#!/bin/bash
+top
+df -h
+free -m
+updtime
+iostat
+
+chmod +x basic_admin.sh
+./basic-admin.sh
+
+------------------------------------------------------------------------------------------------------------------------
+Defining Variables,
+------------------------------------------------------------------------------------------------------------------------
+
+vi.vaiables.sh
+
+#!/bin/bash
+#Defining the Variable
+p=pwd
+wi=whoami
+d=date
+c='cal 2024'
+# Print he command
+echo "To Running basic Commands"
+# Calling the  Variable start from $
+$p
+$wi
+$d
+$c
+
+chmod +x vaiables.sh
+./vaiables.sh
+
+------------------------------------------------------------------------------------------------------------------------
+Input and Ouput, using read and echo
+------------------------------------------------------------------------------------------------------------------------
+
+vi inout.sh
+
+#!/bin/bash
+a=`hostname`
+echo Hello, My name is Saravanan.N
+echo
+echo What is your name ?
+read un
+echo Hello $un
+echo
+echo My name is $a
+echo
+
+------------------------------------------------------------------------------------------------------------------------if-then Scripts
+------------------------------------------------------------------------------------------------------------------------
+
+vi if-then.sh
+
+#!/bin/bash
+
+echo Check the Value Equal 100
+echo enter the values
+
+read val
+count=100
+
+if [ $count -eq $val ]
+then
+	echo Count is Equal then 100
+else
+	echo Count is NOT Equal then 100
+fi
+
+-----------------------------------------------------------------------------------------------------------------------
+
+vi if-then-file.sh
+
+#!/bin/bash
+
+clear
+if [ -e /home/ec2-user/1.txt ]
+
+        then
+        echo "File exist"
+        else
+        echo "File does not exist"
+fi
+
+------------------------------------------------------------------------------------------------------------------------
+if-then Scripts, ip ping
+-----------------------------------------------------------------------------------------------------------------------
+
+vi if-ping
+
+#!/bin/bash
+
+clear
+ping -c2 8.8.8.8 &> /dev/null
+
+if [ $? -eq 0 ]
+then
+echo Ok
+else
+echo Not Pinging 
+fi
+
+
+vi if-ping
+
+#!/bin/bash
+
+clear
+
+echo Type the ip address
+read h 
+ping -c1 $h &> /dev/null
+
+if [ $? -eq 0 ]
+then
+echo $h is pinging
+else
+echo $h is not pinging
+fi
+
+------------------------------------------------------------------------------------------------------------------------
+
+#!/bin/bash
+clear
+h="/home/ec2-user/ip"
+
+for h in $(cat $h)
+
+do
+ping -c1 $h &> /dev/null
+if [ $? -eq 0 ]
+then
+echo $h is pinging
+else
+echo $h is not pinging
+fi
+done
+
+# Before Running scripts have to save ip on same path or Different path vi ip
+
+------------------------------------------------------------------------------------------------------------------------
+Delete the Old files or Move
+------------------------------------------------------------------------------------------------------------------------
+
+# Creating a file on old date for 3 months before,
+
+touch -d "Thu, 14 November 2024 12:30:00" a b c d e f
+
+# Find the last 60 days before created files
+
+find /home/ec2-user -mtime +60 -exec ls -l {} \;
+
+# Delete the last 60 days before created files
+
+find /home/ec2-user -mtime +60 -exec rm {} \;
+
+# move the last 60 days before created files
+
+find /home/ec2-user -mtime +60 -exec mv {} {}.old \;
+
+------------------------------------------------------------------------------------------------------------------------
+Backup scripting
+------------------------------------------------------------------------------------------------------------------------
+
+tar cvf /tmp/backup.tar /etc /var
+
+gzip /tmp/backup.tar
+
+find /tmp/backup.tar.gz -mtime -1 -type f -print &> /dev/null
+
+if [ $? -eq 0 ]
+then
+echo Backup was created
+echo Archiving Backup
+#scp /tmp/backup.tar.gz hostname@ipaddres /var/remote backup
+else
+echo Backup failed
+fi
+
+------------------------------------------------------------------------------------------------------------------------
+Screen logout time Configuration
+------------------------------------------------------------------------------------------------------------------------
+
+vi /etc/systemd/logind.conf
+
+# have to change #HoldoffTimeoutSec= s
+
+------------------------------------------------------------------------------------------------------------------------
+For-Loop Creating, Assigning Permission and Deleting files
+------------------------------------------------------------------------------------------------------------------------
+
+#!/bin/bash
+
+echo "Enter the count of how may files need to create ?"
+read f
+
+echo "Enter file name should create ?"
+read n
+
+
+echo "File Assigning it take $f Seconds ..."
+
+for i in $(seq 1 $f)
+do
+       touch $n.$i
+       echo "Assigning Write Permission $n.*"
+       chmod +x $n.$i
+       sleep 1
+done
+
+l=`ls -ltr`
+echo file has created $l
+sleep 2
+
+for i in $(seq 1 $f)
+do
+       rm -rf $n.$i
+done
+
+d=`ls`
+echo file has Deleted  $d
+sleep 2
+
+------------------------------------------------------------------------------------------------------------------------
+# Display not available files
+#!/bin/bash
+
+files="/home/ec2-user/scripting/for-loop.sh
+        /home/ec2-user/scripting/for-admin.sh
+        /home/ec2-user/scripting/test.txt
+        /home/ec2-user/Scripting/demo.txt"
+echo
+
+for file in $files
+do
+        if [ ! -e $file ]
+        then
+                echo $file do not exist
+                echo
+        fi
+done
+
+-------------------------------------------------------------------------------------------------------------------------
+For-loop using Copy files to Remote hosts
+-------------------------------------------------------------------------------------------------------------------------
+#!/bin/bash
+
+a=`cat /home/ec2-user/test.txt`
+for i in $a
+do 
+	scp somefile $i:/tmp
+done
+-------------------------------------------------------------------------------------------------------------------------
+Directory Assignment
+-------------------------------------------------------------------------------------------------------------------------
+
+#!/bin/bash
+
+cd /home/ec2-user
+for DIR in *
+
+do
+  CHK=$(grep -c "/home/$DIR" /etc/passwd)
+if [ $CHK -ge 1 ]
+then
+echo "$DIR is assigned to user"
+else
+echo "$DIR is NOT assigned to user"
+fi
+done
+
+-------------------------------------------------------------------------------------------------------------------------
+Listing of Logged in user
+-------------------------------------------------------------------------------------------------------------------------
+
+#!/bin/bash
+
+today=`date | awk '{print $1, $2, $3}'`
+last | grep "$today" | awk '{print $1}'
+
+
+echo "Enter the date want to check who are all login"
+read D
+
+last | grep "$D" | awk '{print $1, $3, $5, $6, $7}'
+
+-------------------------------------------------------------------------------------------------------------------------
+

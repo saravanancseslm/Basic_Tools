@@ -1,0 +1,64 @@
+LAMP Configuration,
+
+
+# Update a package manager
+
+apt update -y
+
+apt upgrade -y
+
+reboot
+
+
+# Install Apache
+
+apt install apache2 -y
+
+systemctl status apache2
+
+Verify here http://ip
+
+
+# Update the Uncomplicated Firewall (UFW)
+
+apt install ufw -y
+
+ufw status
+
+ufw enable
+
+ufw status
+
+ufw app list
+
+ufw allow 'Apache Full'
+
+ufa allow 'OpenSSH'
+
+Verify here http://ip
+
+
+# Insatll MySQL Database
+
+apt install mysql-server -y
+
+
+# Install PHP
+
+apt install php libapache2-mod-php php-mysql php -v
+
+
+#install the commandline PHP
+
+apt install php-cli -y
+
+systemctl restart apache2
+
+systemctl status apache2
+
+
+vi /var/www/html/info.php
+
+<?php
+phpinfo();
+?>

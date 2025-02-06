@@ -1,0 +1,69 @@
+#!/bin/bash
+yum update -y
+yum install git -y
+echo
+gver=$(git --version)
+echo "print git version is ${gver}%"
+echo
+
+yum install java-11 -y
+echo
+jver=$(java --version)
+echo "print java version is ${jver}%"
+echo
+
+yum install docker -y
+echo
+Dver=$(docker --version)
+echo "print Docker version is ${Dver}%"
+echo
+systemctl enable docker
+systemctl start docker
+echo
+echo
+stat=$(systemctl status docker)
+echo "Docker status ${stat}%"
+echo
+mkdir /home/ec2-user/project
+echo "Project Directory Created"
+cd /home/ec2-user/project
+echo "Moved on Project"
+git clone https://github.com/saravanancseslm/Resume_Project_V2.git
+echo
+echo
+dir=$(ls- ltr)
+echo "inside files ${dir}%"
+echo
+cd ..
+echo "Creating Dockerfile..."
+cat <<EOF > Dockerfile
+# Use an official httpd base image
+FROM httpd:latest
+
+# Updating user Details
+MAINTAINER "Saravanan"
+
+# Copying the content
+COPY ./Resume_Project_V1/ /usr/local/apache2/htdocs
+
+# Expose the port
+EXPOSE 80
+
+EOF
+
+echo "Dockerfile has been created successfully."
+
+mv /home/ec2-user/Dockerfile /home/ec2-user/project/
+
+cd /home/ec2-user/project
+
+docker build -t resume .
+
+echo "docker image created"
+dim=$(docker images)
+echo "Docker images is ${dim}%"
+
+docker run -d --name Resume01 -p 80:80 resume
+
+dps=$(docker ps -a)
+echo "Docker file running ${dps}%"

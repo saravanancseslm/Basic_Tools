@@ -1,0 +1,71 @@
+Apache Httpd and Tomcat Server installation and guide,
+
+Httpd Configuration, port 80
+
+	sudo su
+
+	yum install httpd -y
+
+	service httpd start
+
+	yum install git -y
+
+	mkdir webpage
+
+	cd webpage
+
+	git clone "Repo url"
+
+	rm -rf /var/www/html/* 					# Removing old content 
+
+	mv /home/ec2-user/webpage/* /var/www/html/
+
+	# search instance ip with 80 port will get web page,
+
+
+Tomcat Configuration, port 8080
+
+Pre requirement Java
+
+	wget https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.2/bin/apache-tomcat-11.0.2.tar.gz
+
+	tar -zvxf apache-tomcat-11.0.2.tar.gz
+
+	yum install java -y
+
+	cd /home/ec2-user/apache-tomcat-11.0.2/bin 		# inside all service available
+
+	./startup.sh
+
+	./shutdown.sh
+
+	ps -ef | grep tomcat 					# It will show whether service is running or not
+
+	# Want to change port number need to edit the server.xml
+	
+	vi apache-tomcat-11.0.2/conf/server.xml			# connector port number need to change after restart service,
+
+	# Configure the tomcat server web console, Usually it will under 2 places, and it needs to be changed in both the places
+
+	find / -name context.xml				# find the context.xml
+
+	vi /home/ec2-user/apache-tomcat-11.0.2/webapps/host-manager/META-INF/context.xml 	# should command <!-- <Valve className ...0:0:1" />   -->  
+
+	vi /home/ec2-user/apache-tomcat-11.0.2/webapps/manager/META-INF/context.xml		# should command <!-- <Valve className ...0:0:1" /> -->
+
+	vi /home/ec2-user/apache-tomcat-11.0.2/conf/tomcat-users.xml				# should be update login details,
+
+	# Copy all the details and past the login details
+
+	 	<role rolename="manager-gui"/>
+ 		<role rolename="manager-script"/>
+ 		<role rolename="manager-jmx"/>
+ 		<role rolename="manager-status"/>
+ 		<user username="admin" password="admin" roles="manager-gui, manager-script, manager-jmx, manager-status"/>
+ 		<user username="deployer" password="deployer" roles="manager-script"/>
+ 		<user username="tomcat" password="s3cret" roles="manager-gui"/> 
+
+	./startup.sh
+
+	./shutdown.sh						# Restarting service
+	

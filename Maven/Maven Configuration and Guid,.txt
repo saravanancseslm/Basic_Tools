@@ -1,0 +1,57 @@
+Maven Configuration and Guid,
+
+-> first install Java and Maven
+
+-> to Lanch instance, run the commands, 
+
+	sudo su
+	yum update -y
+	yum install java-17
+	yum install maven
+	
+-> to check version 
+
+	mvn --version
+
+-> to Run a Project,
+	
+--> Download project from git Repo
+
+	yum install git -y
+	mkdir Project name
+	cd Project Name
+	git init
+	git pull repo link url
+
+--> to generate archetype:generate
+
+	mvn archetype:generate
+	have to give archetype ex : 2209
+	have to give version ex : 9
+	have to give group Id ex : com.resumev1
+	have to give artifactid ex : myprofile
+	have to give snapshot version ex : 0.0.1-snapshot
+	have to give package value ex : war or jar
+	hace to give yes or no ex : y
+
+--> it will create directory inside myprofile 
+	-> inside pom.xml file available, and src inside main and test file available
+	-> main inside package application available java or web app it will display
+	
+	-> now need to move pom.xml file out side myprofile
+	-> it should move on  Resume_Project_V1
+
+	mv /home/ec2-user/Resume_Project_V1/myprofile/pom.xml /home/ec2-user/Resume_Project_V1
+	cat pom.xml
+	
+	able to read the content
+
+--> to build the Package
+
+	mvn clean package
+
+--> it will generate target file
+
+	cd target 
+
+	-> inside package created 
