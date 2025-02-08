@@ -142,6 +142,10 @@ terraform plan -destroy
 
 terraform destroy -auto-approve
 
+terraform destroy -target=aws_instance.example 
+
+terraform import aws_instance.foo i-abcd1234
+
 
 
 
