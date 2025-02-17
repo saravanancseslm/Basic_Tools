@@ -1,0 +1,23 @@
+ECS, EKS, Blue and green deploy, Artefactory, Credential management, cloud front
+
+
+how to access 2 network vpc in AWS
+
+how to deploy in 2 tier application in AWS DevOps ,
+
+docker copy and add difference
+
+what is the user of providing internet gateway in AWS and Devops
+
+What A configuration, Address configuration
+
+what is Route 52,
+
+what is arcture of application
+
+what soa recorda
+
+what i c2 server
+
+how will you understand your appication using devps
+

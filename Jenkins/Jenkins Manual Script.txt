@@ -4,6 +4,7 @@ Jenkins Automation,
 
 #!/bin/bash
 yum update -y
+yum install git -y
 wget -O /etc/yum.repos.d/jenkins.repo     https://pkg.jenkins.io/redhat-stable/jenkins.repo
 rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
 yum upgrade
@@ -12,11 +13,25 @@ yum install jenkins -y
 systemctl enable jenkins
 systemctl start jenkins
 clear
+echo
+echo
+git=`git --version`
+echo "git has been Installed version is $git"
+echo
+echo
 java=`java --version`
 echo "Java has been Installed version is $java"
+echo
+echo
 status=`systemctl status jenkins | grep "Active"`
 echo "$status"
 ip=`curl ifconfig.me`
+echo
+echo
 echo you can access the Jenkins server http://$ip:8080 
+echo
+echo
 pass=`sudo cat /var/lib/jenkins/secrets/initialAdminPassword`
 echo Jenkins Server admin password is $pass
+echo
+echo

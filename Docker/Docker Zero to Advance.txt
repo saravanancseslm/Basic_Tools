@@ -1,0 +1,444 @@
+Docker Complete Details
+
+youtube referral in tamil :  https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqa3pVbnlOMzE4dDE3SmF3c1NqRkxkU3J0elE4UXxBQ3Jtc0tuN2VJSi1QcnZOWjJvdnVJS3ZPSGIxMUkwSmtkQ25nUXVwd2xhaE9tWTBJRElVeEJfZDB6V0E5Z0hmMHZJSHhRLTJNVnc2WEVTMy10VjBiWUZFZFJXR296WWJGZ2Qxd0xTTkJzcC1ycmNZRW5OYlhVQQ&q=https%3A%2F%2Fbit.ly%2Fdevops-tutorials-tamil&v=6Ob-lECmzbk
+
+Referal website : https://www.learnitguide.net/
+
+----------------------------------------------------------------------------------------------------------------------------
+
+# 1, Installing on Ubuntu
+
+	1.1 sudo apt install apt-transport-https ca-certificates curl software-properties-common -y
+
+	1.2 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+
+	1.3 echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+	1.4 sudo apt update
+
+	1.5 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+	# 1.6 Check Docker Version
+	docker -v
+	O/P
+	Docker version 26.1.4, build 5650f9b
+
+	# 1.7 Enable the docker
+	systemctl enable docker
+
+	# 1.8 Strat docker service
+	systemctl strat docker
+
+	# 1.9 Check Docker status
+	systemctl status docker
+
+-------------------------------------------------------------------------------------------------------------------------
+
+# 2, Docker Essentials | Docker Basics | Docker CLI | --help
+
+	# 2.0 Check version
+	docker version
+
+	# 2.1 Docker list all options
+	docker
+
+	# 2.2 Docker option helps it will display all the options
+	docker image help
+	Examples
+	docker volume create test
+	docker volume inspect test
+
+	# 2.3 Docker information it will display over all information
+	docker info
+
+		# 2.3.0 df Show docker disk usage
+		docker system df
+
+		# 2.3.1 info Display system-wide information
+		docker system info  
+      
+ 		# 2.3.2 prune Remove unused data like Total reclaimed space: 0B
+		docker system prune
+
+	# 2.4 Docker stats  Display a live stream of container(s) resource usage statistics
+	docker stats [OPTIONS] [CONTAINER...]
+	docker stats 
+
+	# 2.5 Docker search Docker Hub for images 
+	docker search httpd
+
+	# 2.6 Docker images to check available images on running server
+	docker images
+
+	# 2.7 Docker Pull it will pull the image on Docker hub repository
+	docker pull httpd
+
+	# 2.8 Docker ps and ps -a display on running containers, ps -a running and exited containers
+	docker pa or ps -a
+	
+	# 2.9 Docker run the docker images called as container
+	docker run -d --name http -p 80:80 httpd
+	-d | it will run around background Detached mode,
+	--name | http we will give the name of container,
+	-p 80:80 | select the port a:b a is which port have to run, b it derived for default image it writhed port it take
+	httpd | image name 
+
+	# 2.10 check status
+	docker ps -a
+
+	# 2.11 Login to container 
+	docker exec -it http /bin/bash
+	-it | interactive terminal executing command Give extended privileges to the command
+	http | Container name
+	/bin/bash or bin/sh | to drop the shell after we can execute some operation inside container
+
+	# 2.12 with out login create files
+	docker exec http mkdir /tmp/test.txt
+
+		# 2.12.0 with out login list of files
+		docker exec http ls /tmp/test.txt
+		o/p
+			test.txt
+
+		# 2.12.1 with out login copy a files to inside container
+		docker cp /home/root1/Desktop/index.html http:/usr/local/apache2/htdocs/
+		
+		# 2.12.2 with out login copy a files to outside container (Source to Destini changed)
+		docker cp http:/usr/local/apache2/htdocs/index.html  /home/root1/Desktop/
+
+	# 2.13 Stop or start the container
+	docker stop http
+	docker start http
+
+	# 2.14 Remove the container, first need to stop after able to remove, or force fully able to remove
+	docker stop http
+	docker rm http
+		or
+	docker rm -f http
+
+	# 2.15 check Docker logs
+	docker logs http
+
+	# 2.16 inspect the docker containers, inside can able to check all details
+	docker inspect http 
+
+	# 2.17 Remove auto-Matic unused containers 
+	docker system prune
+
+	# 2.18 Remove docker images
+	docker rmi httpd
+
+NOTE : use letter http for container names | httpd for image name
+
+------------------------------------------------------------------------------------------------------------------------------
+
+# 3, Docker images
+
+	# 3.1 Docker run the docker images called as container
+	docker run -d --name http -p 80:80 httpd
+
+	# 3.2 Docker history
+	docker history http
+	
+	# 3.3 Create backup on Running container 
+	docker save http > http.backup.tar
+
+	# 3.4 Copying file to remote another host 200.128 to 200.129
+	scp http.backup.tar ec2-user@192.168.200.129:/home/ec2-user
+
+	# 3.5 Login on Remote hoste 192.168.200.129
+	docker load -i http.backup.tar
+
+	# 3.6 Stop multiple container in single line
+	docker stop conti1 conti2 conti3 number of container names 
+	docker stop webapp2 busapp resume webapp http
+
+	# 3.7 remove images on single command
+	docker rmi -f $(sudo docker images -a -q) | # Like declaring variables
+	docker images -a -q | # It will list all ideal stopped containers
+
+	# 3.8 creating container to docker-image
+
+		# 3.8.0 un-tar the backup images on step repeat 3.5, after will get backup images
+
+		# 3.8.1 Run the image (docker run -d --name http1 -p 80:80 httpd)
+
+		# 3.8.2 Change some content on inside running container
+
+		# 3.8.3 docker commit http1 | It will create with out name and tag image 
+
+		# 3.8.4 docker commit http1 customimage:1.2 | It will create with name and tag
+
+		# 3.8.5 docker run -d --name http2 -p 81:80 customimage:1.2 | Running next container on 81 port
+
+	# 3.9 Uploading image for Docker remote repository
+		
+		# 3.9.0 docker login -u username | Login remote repository
+
+		# 3.9.1 docker tag customimage:1.2 saravanancseslm/customimage:1.2 | have to change tag 
+
+		# 3.9.2 docker push saravanancseslm/customimage:1.2 | Files pushing remote repo like git
+
+		# 3.9.3 docker info | it will show which repository login all details
+
+------------------------------------------------------------------------------------------------------------------------------
+
+# 4 Create or Customize Docker images using Dockerfile | # Website Reference : https://www.learnitguide.net/2018/06/dockerfile-explained-with-examples-of.html
+
+	# 4.0 Use vi editor and create Docker file
+	vi /home/ububtu/Desktop/dockerfile
+
+	# 4.1 all first Instruction will be capital 2nd argument will be small letter
+	INSTRUCTIONS arguments
+		
+	# 4.3 IT will download on base image
+	FROM ubuntu:latest
+	
+	# 4.4 Running Some commands
+	RUN sudo apt-get update && sudo apt-get install -y apache2
+
+	# 4.5 Transferring files to inside containers 
+	
+		# 4.5.1 Copying file from to Location
+		COPY index.html /usr/local/apache2/htdocs
+
+		# 4.5.2 Add command used for extract the Compressed files(zip, tar, gzip, etc..) If the "src" argument is a compressed file (tar, gzip, bzip2, etc) then it will extract at 			the specified "dest" in the container's filesystem.
+		ADD index.tar /usr/local/apache2/htdocs
+
+	# 4.6 Expose it will given instruction which port have to run Networking related command, Example webapp running on 80 or 8080 will give a expose command
+	EXPOSE 80 
+
+	# 4.7 LABEL instruction is used to specify metadata information's to an image. A LABEL is a key-value  pair
+	LABEL "Application_Environment"="Development"
+
+	# 4.8 CMD instruction is used to set a command to be executed when running a container
+	CMD ping google.com
+	CMD python myapplication.py
+
+	# 4.9 ENTRYPOINT instruction is used to configure and run a container as an executable.
+	ENTRYPOINT ping google.com
+	ENTRYPOINT python myapplication.py
+
+	# 4.10 VOLUME instruction is used to create or mount a volume to the docker container from the docker host filesystem.
+	VOLUME /data
+	VOLUME /appdata:/appdata
+
+	# 4.11 USER instruction is used to set the username,group name, UID and GID for running subsequent commands. Else root user will be used.
+	USER webadmin
+	USER webadmin:webgroup
+	USER 1008
+	USER 1008:1200
+
+	# 4.12 WORKDIR instruction is used to set the working directory
+	WORKDIR /app/
+	WORKDIR /java_dst/
+
+	# 4.13 ENV instruction is used to set environment variables with key and value. Lets say, we want to set variables APP_DIR and app_version with the values /data and 2.0 			respectively
+	ENV APP_DIR /data/
+	ENV app_version 2.0
+
+	# 4.14 ARG instruction is also used to set environment variables with key and value, but this variables will set only during the image build not on the container
+	ARG TMP_NAME mycustom_image
+	ARG TMP_VER 2.0
+	
+	# 4.15 ONBUILD instruction is used to specify a command that runs when the image in the Dockerfile is used as a base image for another image.
+	ONBUILD ADD . /app/data
+	ONBUILD RUN yum install httpd
+
+	Examples1 :
+
+		# It will pull the docker repository base image
+		FROM httpd:latest
+
+		# It will Drop (docker exec -it webapp /bin/bash) the location on Bash 
+		WORKDIR /usr/local/apache2/htdocs
+	
+		# Copying file from to location
+		COPY ./Resume_Project_V2/ /usr/local/apache2/htdocs/
+
+		# Expose it will exposeing the port number which port will work
+		EXPOSE 80
+
+	Example 2 :
+
+		# It will pull the docker repository base image
+		FROM OpenJDK:8-jdk-alpine
+
+		# Refer to Maven bulid -> finalname
+		ARG JAR_FILE=target/spring-boot-web.jar
+
+		# It will Drop (docker exec -it webapp /bin/bash) the location on Bash 
+		WORKDIR /opt/app
+
+		# Copying  target/spring-boot-web.jar /opt/app/app.jar
+		COPY ${JAR_FILE} app.jar
+
+		# java -jar /opt/app/app.jar
+		ENTRYPOINT ["java","-jar","app.jar"] 
+	
+	# 4.16 Bulid the image
+	docker build -t webapp . or docker build . -t webapp:latest 
+
+	# 4.16 Build image on other keeping docker file
+	docker bulid -t webapp -f /home/root1/Desktop/dockerfile
+
+
+------------------------------------------------------------------------------------------------------------------------------
+# 5 Docker Networking Default ip creating auto assign on 172.17.0.0
+
+	# 5.0 To run the ubuntu container
+	docker run -d -it --name os ubuntu
+
+		# 5.0.0 list of networks
+		docker network ls
+
+		# 5.0.1 creating bridge network
+		docker network create bridge-n/w 
+
+		# 5.0.1 creating bridge network inside option want know 
+		docker network create -help
+
+	# 5.2 Go to inside the container
+	docker exec -it os /bin/bash
+	
+	# 5.3 upgrading the container configuring ping command what we required
+	apt-get update && apt-get install iputils-ping && apt-get install curl
+	
+	# 5.4 try to ping ip on 1st running container webapp it ip 172.17.0.2 ubuntu container ip 172.17.0.3
+	ping 172.17.0.2
+	Replay will get
+
+	# 5.5 try to reach content reach on html content
+	curl 172.17.0.2:80
+
+	# 5.6 it will not get any container ip with out network only work on particular host only
+	docker run -d -it --name os1 --network=host ubuntu
+
+	# 5.6 it will not get any container ip will not work inside host also
+	docker run -d -it --name os2 --network=none ubuntu
+
+------------------------------------------------------------------------------------------------------------------------------
+
+# 6 Docker Volume
+
+	# 6.0 docker volume options
+	docker volume -help
+
+	# 6.1 Creating volume 
+	docker volume create data_vol
+
+	# 6.2 to check it created or not 
+	docker volume ls
+	
+	# 6.3 inspect all the details will get
+	docker volume inspect data_vol
+
+	# 6.4 Attach the volume in container if container inside not have any /data it will create 
+	docker run -d -it --name os --mount source=data_vol,destination=/data ubuntu
+
+	# 6.5 Volume will creating on local host in ubuntu
+	cd /var/lib/docker/volumes/data_vol
+
+	# 6.6 while add any file on data_vol inside through host or container it will display on both location like EFS in AWS
+	docker exec -it os /bin/bash
+	cd /data
+
+	# 6.7 To attach existing volume -v source:destination
+	docker run -d -it --name os1 -v /data/mount:/data ubuntu /bin/bash
+
+	# 6.8 Delete the volume
+	docker volume rm data_vol
+
+	# 6.9 Remove unused volume prune
+	docker volume prune 
+
+---------------------------------------------------------------------------------------------------------------------------------
+
+# 7 Docker Swarm
+
+	# 7.0 Container Orchestration
+	docker swarm init --advertise-addr 192.168.200.128
+
+		# 7.0.0 It will give a token to connect nodes
+		docker swarm join --token SWMTKN-1-0x1zi0rcrxq0b9kpyvzanueeo0lqnhp9zvokogl56qgs9oh6yo-enqhso7mwn93ym0082vattojy 192.168.200.128:2377
+
+		# 7.0.1 paste the same command on worker node another server
+		
+	# 7.1 Check the status
+	docker node ls
+
+	# 7.2 want to remove the nodes
+	docker node rm SlaveVM
+
+	# 7.3 to check all connected container 
+	docker node ps
+
+	# 7.4 check service
+	docker service ps webapp
+
+	# 7.5 Run the docker container using replicas -> It will deploy on 2 containers on free availability nods
+	docker service create --replicas 2 -p 80:80 --name webapp httpd 
+  
+	# 7.6 Run the docker container using global -> it will deploy all available nodes one one it will run
+	docker service create --global -p 80:80 --name webapp httpd
+	
+	# 7.7 change the replicas scaleup or scale down
+	docker service scale webapp=2
+
+	# 7.8 Upgrading service change latest content
+	docker service upgrade --image httpd:2.4.12 webapp
+
+	# 7.9 Roll back the service on perversion 
+	docker service rollback webapp
+
+	# 7.10 Drain the nodes want to performance issue want to close it will move on another availability nodes
+	docker node update --availability drain SlaveVM
+
+	# 7.11 active the nodes 
+	docker node update --availability active SlaveVM
+
+	# 7.8 Removing Docker Service swarm containers
+	docker service rm webapp
+
+------------------------------------------------------------------------------------------------------------------------------
+
+# 8 Docker Compose | Running yaml or yml file 
+
+	# 8.0 Running docker-compose file
+	docker-compose -f filename.yaml up
+
+	# 8.1 Running docker-compose file in same directory
+	docker-compose up
+
+	# 8.2 stop the running 
+	docker-compose -f filename.yaml down
+
+	# 8.3 Running docker-compose file detached mode
+	docker-compose -f filename.yaml up -d
+
+	# downloading sample code on git repo
+	https://github.com/learnitguide/kubernetes-knote.git
+
+Example :
+
+	version: "3.7"
+services:
+  app:
+    container_name: knote-app
+    image: learnitguide/knotejs:1.0
+    environment:
+           MONGO_URL: mongodb://mongo_db_host:27017/dev
+    ports:
+     - "80:3000"
+    depends_on:
+     - mongo
+    links:
+      - mongo:mongo_db_host
+  mongo:
+    container_name: knote-mongo
+    image: mongo
+
+------------------------------------------------------------------------------------------------------------------------------
+	
+
+Sobha@4321
