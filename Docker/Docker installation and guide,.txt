@@ -1,4 +1,4 @@
-Docker installation and guide,
+Docker installation and guide,  youtube Link : https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqa3pVbnlOMzE4dDE3SmF3c1NqRkxkU3J0elE4UXxBQ3Jtc0tuN2VJSi1QcnZOWjJvdnVJS3ZPSGIxMUkwSmtkQ25nUXVwd2xhaE9tWTBJRElVeEJfZDB6V0E5Z0hmMHZJSHhRLTJNVnc2WEVTMy10VjBiWUZFZFJXR296WWJGZ2Qxd0xTTkJzcC1ycmNZRW5OYlhVQQ&q=https%3A%2F%2Fbit.ly%2Fdevops-tutorials-tamil&v=6Ob-lECmzbk
 
 install docker dependency,
 	--> Java
@@ -15,13 +15,13 @@ Commands :
 
 	docker pull httpd	# Pull the image from Docker, 
 
-	docker images 		# Display on docker downloaded containers,
+	docker images 		# Display on docker containers,
  
 	docker ps 		# Display on Running containers,
 
 	docker ps -a 		# Running and Stopped status, ps- mean by process, -a mean by all,
 
-	docker run -d -p 70:80 saravanancseslm/resume	 # -d detach mode running background, -p Port number 70, 80 Respect port number ex, httpd running 80,  Docker name 										saravanancseslm/resume,
+	docker run --name resume -d -p 70:80 saravanancseslm/resume	 # -d detach mode running background, -p Port 											number 70, 80 Respect port number ex, 											httpd running 80,  Docker name 												saravanancseslm/resume,
 
 	docker start container id 	# Start the container image
 
@@ -29,8 +29,29 @@ Commands :
 
 	docker rm container id		# Remove the container image
 
+	docker rm -f container id	# It will remove force fully 
+
 	docker exec -it "container id" /bin/bash	# Entering the container inside,
 
+	docker exec name or ID uname # With out login execute operation
+	
+	docker exec jovial_vaughan touch /bin/test.txt # Creating file with out login inside container
+
+	docker exec jovial_vaughan ls /bin/ # to check inside files
+	
+	docker exec jovial_vaughan cat /usr/local/apache2/htdocs/index.html # Read the file with out login inside 																			container
+
+	docker cp /home/ec2-user/index.html 41821f4a2c7e:/usr/local/apache2/htdocs/ # Copying file to source to 																				Destination
+
+	docker system df # it will display disk free
+
+	docker stats # display over all usages,
+
+	docker stats container name # display over usage on single container
+
+	docker top #
+
+	docker system prune # Remove unused container or images
 	
 
 

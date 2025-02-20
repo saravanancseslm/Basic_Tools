@@ -44,7 +44,7 @@ FROM httpd:latest
 MAINTAINER "Saravanan"
 
 # Copying the content
-COPY ./Resume_Project_V2/ /usr/local/apache2/htdocs
+COPY ./Resume_Project_V1/ /usr/local/apache2/htdocs
 
 # Expose the port
 EXPOSE 80
@@ -67,11 +67,3 @@ docker run -d --name Resume01 -p 80:80 resume
 
 dps=$(docker ps -a)
 echo "Docker file running ${dps}%"
-
-ip=`curl ifconfig.me`
-echo
-echo
-echo you can access the Resume http://$ip:80
-echo
-echo
-
