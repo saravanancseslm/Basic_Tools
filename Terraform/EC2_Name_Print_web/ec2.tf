@@ -108,6 +108,6 @@ resource "aws_instance" "my_app" {
     
 
     tags = {
-      Name = "Terraform_Auto"
+      Name = "my_app"
     }
 }
