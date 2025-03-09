@@ -1,3 +1,2 @@
-ins_ami = "ami-05b10e08d247fb927"
-ins_type = "t2.micro"
-sec_group ="Open_Ports"
+my-ami-id = "ami-05b10e08d247fb927"
+my-instance-type = "t2.micro"

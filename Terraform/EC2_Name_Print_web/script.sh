@@ -1,5 +1,11 @@
 #!/bin/bash
+yum update -y
 yum install httpd -y
-systemctl enable httpd
 systemctl start httpd
-echo "saravanan" > /var/www/html/index.html
+systemctl enable httpd
+echo "Welcome to Saravanan" > /var/www/html/index.html
+yum install java-11 -y
+yum install docker -y
+systemctl enable docker
+systemctl start docker
+docker run -d --name webserver -p 8080:80 nginx
