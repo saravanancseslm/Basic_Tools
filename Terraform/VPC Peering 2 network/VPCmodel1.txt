@@ -1,0 +1,428 @@
+# 1 VPC sobha Resource
+resource "aws_vpc" "VPC_Auto" {
+  cidr_block = "172.16.0.0/16"
+
+tags = {
+    Name = "${var.client_name}_VPC_Auto"
+    Manged_by = "${var.managed_by}"
+  }
+}
+
+# 1.1 VPC lmcpl Resource
+
+resource "aws_vpc" "VPC_lmcpl" {
+  cidr_block = "192.168.0.0/16"
+
+tags = {
+    Name = "${var.vendor_name}_VPC_lmcpl"
+    Manged_by = "${var.managed_by}"
+  }
+}
+
+# 1.2 VPC Peering Connection
+
+resource "aws_vpc_peering_connection" "peer_vpc" {
+  vpc_id      = aws_vpc.VPC_Auto.id
+  peer_vpc_id = aws_vpc.VPC_lmcpl.id
+  auto_accept = true
+
+  tags = {
+    Name       = "VPC_${var.client_name}-to-VPC_${var.vendor_name}"
+    Managed_by = "${var.managed_by}"
+  }
+}
+
+# 2 Internet_Gateway for sobha
+
+resource "aws_internet_gateway" "igw_Auto" {
+  vpc_id = aws_vpc.VPC_Auto.id 
+
+  tags = {
+    Name = "${var.client_name}_igw_Auto"
+    Manged_by = "${var.managed_by}"
+  }
+}
+
+# # 2.1 Internet_Gateway for lmcpl
+
+# resource "aws_internet_gateway" "igw_lmcpl" {
+#   vpc_id = aws_vpc.VPC_lmcpl.id 
+
+#   tags = {
+#     Name = "${var.vendor_name}_igw_lmcpl"
+#     Manged_by = "${var.managed_by}"
+#   }
+# }
+
+# 3 Public Subnet for sobha
+
+resource "aws_subnet" "Pub_Subnet1" {
+  vpc_id     = aws_vpc.VPC_Auto.id
+  cidr_block = "172.16.1.0/24"
+
+  tags = {
+    Name = "${var.client_name}_Pub_Subnet1"
+    Manged_by = "${var.managed_by}"
+  }
+}
+
+# # 3.1 Public Subnet for lmcpl
+
+# resource "aws_subnet" "Pub_Subnet2" {
+#   vpc_id     = aws_vpc.VPC_lmcpl.id
+#   cidr_block = "192.168.1.0/24"
+
+#   tags = {
+#     Name = "${var.vendor_name}_Pub_Subnet2"
+#     Manged_by = "${var.managed_by}"
+#   }
+# }
+
+# 4 Private Subnet  for sobha
+
+resource "aws_subnet" "Priv_Subnet1" {
+  vpc_id     = aws_vpc.VPC_Auto.id
+  cidr_block = "172.16.2.0/24"
+
+  tags = {
+    Name = "${var.client_name}_Priv_Subnet1"
+    Manged_by = "${var.managed_by}"
+  }
+}
+
+# 4.1 Private Subnet  for lmcpl
+
+resource "aws_subnet" "Priv_Subnet2" {
+  vpc_id     = aws_vpc.VPC_lmcpl.id
+  cidr_block = "192.168.2.0/24"
+
+  tags = {
+    Name = "${var.vendor_name}_Priv_Subnet2"
+    Manged_by = "${var.managed_by}"
+  }
+}
+
+# 5 Public RT 1 for sobha
+
+resource "aws_route_table" "RT_public1" {
+  vpc_id = aws_vpc.VPC_Auto.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw_Auto.id
+  }
+
+  tags = {
+    Name = "${var.client_name}_RT_Public1"
+    Manged_by = "${var.managed_by}"
+  }
+}
+
+# # 5.1 Public RT 1 for lmcpl
+
+# resource "aws_route_table" "RT_public2" {
+#   vpc_id = aws_vpc.VPC_lmcpl.id
+
+#   route {
+#     cidr_block = "0.0.0.0/0"
+#     gateway_id = aws_internet_gateway.igw_lmcpl.id
+#   }
+
+#   tags = {
+#     Name = "${var.vendor_name}_RT_Public2"
+#     Manged_by = "${var.managed_by}"
+#   }
+# }
+
+# 6 Private RT 1 for sobha
+
+resource "aws_route_table" "RT_private1" {
+  vpc_id = aws_vpc.VPC_Auto.id
+
+
+  tags = {
+    Name = "${var.client_name}_RT_Private1"
+    Manged_by = "${var.managed_by}"
+  }
+}
+
+
+# 6.1 Private RT 1 for lmcpl
+
+resource "aws_route_table" "RT_private2" {
+  vpc_id = aws_vpc.VPC_lmcpl.id
+
+
+  tags = {
+    Name = "${var.vendor_name}_RT_Private2"
+    Manged_by = "${var.managed_by}"
+  }
+}
+
+# 6.1.1 Peering connection Establishing Private RT sobha to lmcpl
+
+resource "aws_route" "route_sobha_to_lmcpl" {
+  route_table_id         = aws_route_table.RT_public1.id
+  # destination_cidr_block = aws_subnet.Priv_Subnet2.cidr_block # want to map only subnet CIDR
+  destination_cidr_block = aws_vpc.VPC_lmcpl.cidr_block
+  vpc_peering_connection_id = aws_vpc_peering_connection.peer_vpc.id
+}
+
+# 6.1.2 Peering connection Establishing Private RT lmcpl to sobha
+
+resource "aws_route" "route_lmcpl_to_sobha" {
+  route_table_id         = aws_route_table.RT_private2.id
+  # destination_cidr_block = aws_subnet.Pub_Subnet1.cidr_block # want to map only subnet CIDR block
+  destination_cidr_block = aws_vpc.VPC_Auto.cidr_block # ant to map only VPC CIDR block
+  vpc_peering_connection_id = aws_vpc_peering_connection.peer_vpc.id
+}
+
+# 6.1.3 Peering connection Establishing Private DB1 to DB2 RT lmcpl to sobha
+
+resource "aws_route" "route_DB2_to_DB1" {
+  route_table_id         = aws_route_table.RT_private1.id
+  # destination_cidr_block = aws_subnet.Pub_Subnet1.cidr_block # want to map only subnet CIDR block
+  destination_cidr_block = aws_vpc.VPC_lmcpl.cidr_block # ant to map only VPC CIDR block
+  vpc_peering_connection_id = aws_vpc_peering_connection.peer_vpc.id
+}
+
+# 7 Public Subnet 1 Association for sobha
+
+resource "aws_route_table_association" "Pub_SubnetRT1" {
+  subnet_id      = aws_subnet.Pub_Subnet1.id
+  route_table_id = aws_route_table.RT_public1.id
+}
+
+# # 7.1 Public Subnet 1 Association for lmcpl
+
+# resource "aws_route_table_association" "Pub_SubnetRT2" {
+#   subnet_id      = aws_subnet.Pub_Subnet2.id
+#   route_table_id = aws_route_table.RT_public2.id
+# }
+
+# 8 Private Subnet 1 Association for sobha
+
+resource "aws_route_table_association" "Priv_SubnetRT1" {
+  subnet_id      = aws_subnet.Priv_Subnet1.id
+  route_table_id = aws_route_table.RT_private1.id
+}
+
+# 8.1 Private Subnet 1 Association for lmcpl
+
+resource "aws_route_table_association" "Priv_SubnetRT2" {
+  subnet_id      = aws_subnet.Priv_Subnet2.id
+  route_table_id = aws_route_table.RT_private2.id
+}
+
+# 9 Security group Sobha Public Instance hear Allow to connection on all ports like all traffice, SSH, Http
+
+resource "aws_security_group" "sg_public" {
+  name        = "${var.client_name}_sg_public"
+  vpc_id      = aws_vpc.VPC_Auto.id
+
+  # ingress {
+  #   from_port   = 0
+  #   to_port     = 0
+  #   protocol    = "-1"
+  #   cidr_blocks = ["0.0.0.0/0", aws_vpc.VPC_Auto.cidr_block]
+  # }
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  tags = {
+   Name = "SG_${var.client_name}_public"
+    Manged_by = "${var.managed_by}"
+  }
+}
+
+# 10 Security group Sobha Private Instance hear allow the inbound rule lmcpl and Sobha_Pub, SSH, ALL ICMP v4
+
+resource "aws_security_group" "sg_private" {
+  name        = "${var.client_name}_sg_private"
+  vpc_id      = aws_vpc.VPC_Auto.id
+
+  ingress {
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = ["172.16.1.0/24","192.168.2.0/24"]
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["172.16.1.0/24","192.168.2.0/24"]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  tags = {
+   Name = "SG_${var.client_name}_private"
+    Manged_by = "${var.managed_by}"
+  }
+}
+
+# 11 Security group Sobha Private Instance hear allow the inbound rule Sobha_Pub and Pri, SSH, ALL ICMP v4
+
+resource "aws_security_group" "sg_lmcpl_pri" {
+  name        = "${var.vendor_name}_sg_private"
+  vpc_id      = aws_vpc.VPC_lmcpl.id
+
+  ingress {
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = ["172.16.1.0/24","172.16.2.0/24"]
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["172.16.1.0/24","172.16.2.0/24"]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  tags = {
+   Name = "SG_${var.vendor_name}_private"
+    Manged_by = "${var.managed_by}"
+  }
+}
+
+# 12 EC2 for public server for sobha
+
+resource "aws_instance" "sobha_pub" {
+  ami                            = var.ins_ami
+  instance_type                  = var.ins_type
+  key_name                       = "Amazon_Linux_Key"
+  subnet_id                      = aws_subnet.Pub_Subnet1.id
+  associate_public_ip_address    = "true"
+  vpc_security_group_ids         = [ aws_security_group.sg_public.id ]
+  tags = {
+    Name       = "${var.client_name}-pub"
+    Managed_by = "${var.managed_by}"
+  }
+  
+}
+
+# 12.1 DB1 for Private Server for sobha
+
+resource "aws_instance" "DB1" {
+  ami                           = var.ins_ami
+  instance_type                 = var.ins_type
+  key_name                      = "Amazon_Linux_Key"
+  subnet_id                     = aws_subnet.Priv_Subnet1.id
+  associate_public_ip_address   = "false"
+  vpc_security_group_ids        = [ aws_security_group.sg_private.id]
+
+  tags = {
+    Name       = "${var.client_name}-DB1"
+    Managed_by = "${var.managed_by}"
+  }
+  
+}
+
+# # # 13 EC2 for public server for lmcpl
+
+# # resource "aws_instance" "lmcpl_pub" {
+# #   ami                            = var.ins_ami
+# #   instance_type                  = var.ins_type
+# #   key_name                       = "Amazon_Linux_Key"
+# #   subnet_id                      = aws_subnet.Pub_Subnet2.id
+# #   associate_public_ip_address    = "true"
+# #   vpc_security_group_ids         = [ aws_security_group.sg_lmcpl_pub.id ]
+# #   tags = {
+# #     Name       = "${var.client_name}-pub"
+# #     Managed_by = "${var.managed_by}"
+# #   }
+  
+# # }
+
+# 12.1 DB for Private Server for sobha
+
+resource "aws_instance" "DB2" {
+  ami                           = var.ins_ami
+  instance_type                 = var.ins_type
+  key_name                      = "Amazon_Linux_Key"
+  subnet_id                     = aws_subnet.Priv_Subnet2.id
+  associate_public_ip_address   = "false"
+  vpc_security_group_ids = [ aws_security_group.sg_lmcpl_pri.id ]
+
+  tags = {
+    Name       = "${var.client_name}-DB2"
+    Managed_by = "${var.managed_by}"
+  }
+  
+}
+
+# 13 Output for Sobha servers
+
+output "sobha_pub" {
+  value = aws_instance.sobha_pub.public_ip
+  description = "your Public ip"
+}
+
+output "sobha_pri" {
+  value = aws_instance.sobha_pub.private_ip
+  description = "your Public ip"
+}
+
+output "DB1_Pri" {
+  value = aws_instance.DB1.private_ip
+  description = "your Public ip"
+}
+
+# 13.1 Output for Sobha lmcpl
+
+# output "lmcpl_pub" {
+#   value = aws_instance.lmcpl_pub.public_ip
+#   description = "your Public ip"
+# }
+
+# output "lmcpl_pri" {
+#   value = aws_instance.lmcpl_pub.private_ip
+#   description = "your Public ip"
+# }
+
+output "DB2_Pri" {
+  value = aws_instance.DB2.private_ip
+  description = "your Public ip"
+}
+

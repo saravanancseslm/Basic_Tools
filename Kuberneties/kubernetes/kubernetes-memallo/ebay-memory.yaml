@@ -1,0 +1,26 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ebay-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:  # ✅ Corrected indentation
+      environment: dev
+      app: ebay
+  template:
+    metadata:
+      labels:
+        environment: dev
+        app: ebay
+    spec:
+      containers:
+      - name: container1-nginx
+        image: nginx
+        resources:
+          requests:
+            cpu: 10m
+            memory : 512Mi
+          limits:
+            cpu: 20m
+            memory: 1024Mi

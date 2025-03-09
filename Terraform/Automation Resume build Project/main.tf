@@ -1,5 +1,5 @@
 resource "aws_instance" "Terraform_Auto" {
-  ami 			 ="ami-0df8c184d5f6ae949"
+  ami 			 ="ami-05b10e08d247fb927"
   instance_type  ="t2.micro"
   key_name   ="Amazon_Linux_Key"
   security_groups = ["Open_Ports"]

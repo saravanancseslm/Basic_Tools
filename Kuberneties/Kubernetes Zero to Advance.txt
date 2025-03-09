@@ -1,0 +1,851 @@
+Kubernetes Zero to Advance
+
+Referral Document : https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbmVKZGl2cU9JcFZLRjJ4SGVBOS1zU0szejlOZ3xBQ3Jtc0ttTnZVUkRqYkJ2d1NKaThUdlVYRGNIQlA2V2tmSFZmMHFycHQ2ZERvdkt4cTdlNUhia2JFanpNUE1NTjZfRERKTTJIdk9mWUFlUExtWHBVa0huS3Z6aDdOZjhRWnh0b21YNWdMV3J3Z2JGZFJZNlhlaw&q=https%3A%2F%2Fwww.learnitguide.net%2F2021%2F12%2Finstall-kubernetes-cluster-on-ubuntu-20.html&v=HYb9A7CQXD4  
+
+--------------------------------------------------------------------------------------------------------------------------------
+# Basics have to check
+
+# Check the memory
+free -m
+
+# Check the CPU Process
+cat /proc/cpuinfo | grep -i processor
+
+# K8 not recommend swap need to off
+sudo swapoff -a
+
+# Rename the hostname
+hostnamectl set-hostname new-hostname
+
+# While installing application E: The repository 'cdrom://Ubuntu 22.04.3 LTS Jammy Jellyfish - Release amd64 (2023080 7.2) jammy Release' does not have a Release file. error facing in ubuntu run below command 
+
+sudo sed -e '/cdrom/s/^/#/' -i /etc/apt/sources.list
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+# 1 Installation
+	
+	1.0 Swap off need to do, Kubernetes not Required Swap space it will not support
+	
+		1.0.0 Check swap memory 
+		free -m
+
+		1.0.1 Disable Swap Temporarily 
+		swapoff -a 
+
+		1.0.2 Disable Swap Permanently
+		sudo vi /etc/fstab
+		# Comment the below line
+		UUID=<some-uuid> none swap sw 0
+		sudo reboot 
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+	1.1 Install Kubernetes Commands on Both Master and Worker Nodes
+
+	apt update && apt upgrade -y
+#Check if the System Needs Reboot
+cat /var/run/reboot-required
+# Load Necessary Kernel Modules
+
+cat > /etc/modules-load.d/containerd.conf <<EOF
+overlay
+br_netfilter
+EOF
+
+modprobe overlay
+modprobe br_netfilter
+# overlay: Enables the overlayfs kernel module, which is required for container images.
+# br_netfilter: Enables the bridge netfilter kernel module, which is necessary for Kubernetes networking features like inter-pod communication.
+
+## Setup Required Sysctl Parameters
+
+cat > /etc/sysctl.d/99-kubernetes-cri.conf <<EOF
+net.bridge.bridge-nf-call-iptables  = 1
+net.ipv4.ip_forward                 = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+EOF
+
+sysctl --system
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+1.2 Install containerd on both Master and worker
+
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+#Add the Docker repository
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt-get update
+sudo apt-get install containerd.io -y
+
+Configure Containerd
+
+mkdir -p /etc/containerd
+containerd config default > /etc/containerd/config.toml
+sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+systemctl restart containerd
+
+# Configure crictl CLI
+Create the crictl configuration file
+
+cat > /etc/crictl.yaml <<EOF
+runtime-endpoint: unix:///run/containerd/containerd.sock
+image-endpoint: unix:///run/containerd/containerd.sock
+timeout: 2
+EOF
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+1.3 Install Kubernetes Packages on All Nodes
+
+
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl gpg
+
+# Download the public signing key for the Kubernetes package repositories
+
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+#Add the Kubernetes apt repository:
+
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+#Update the apt package index and install Kubernetes components
+
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+1.4 Run Below Commands on Master Node only
+
+kubeadm init --apiserver-advertise-address 192.168.3.11 --pod-network-cidr=172.16.0.0/16
+
+#You will receive a token to join worker nodes to the master node. Copy and paste this token into a notepad.
+
+# Example : Your Kubernetes control-plane has initialized successfully!
+
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 192.168.3.11:6443 --token hiqufb.a7isubb4y2ohadz4 \
+        --discovery-token-ca-cert-hash sha256:c86807c865ee734cc04931292dfef64819b4061a2516ef829d51bb66cdf5bc53
+root@master:/home/saravanan#
+
+#Install Calico Network Plugin
+kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml
+wget https://docs.projectcalico.org/manifests/custom-resources.yaml
+
+#Note ***** Before applying the custom resources, modify the CIDR value in custom-resources.yaml.
+
+kubectl apply -f custom-resources.yaml
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	
+1.5 initialize the Kubernetes with respected network
+	
+kubeadm init --apiserver-advertise-address 192.168.2.11 --pod-network-cidr=172.16.0.0/16
+
+1.5.0 Run the command will getting output running to usermode
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+1.5.1 Copy and Run the token all the worker node
+kubeadm join 192.168.2.11:6443 --token ck1if5.806j45eds9prjgk1 \
+        --discovery-token-ca-cert-hash sha256:d03cd14e746aa7b3467c904d3b12450696d5bf94f266e8ed2e0c59d4eb44bd74
+1.5.2 Running to admin mode
+export KUBECONFIG=/etc/kubernetes/admin.conf
+
+1.5.3 to check connected nodes
+kubectl get nodes
+
+1.5.4 Check the worker node status
+kubectl describe node slavevm01
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# 2, Basic Commands,
+
+# 2.0, It will Display all the options
+kubectl help
+
+# 2.1, Display the services
+kubectl get svc
+
+# 2.2, Display the deploy
+kubectl get deploy
+
+# 2.3, Diplay the pods
+kubectl get pods
+
+# 2.4, Deploy the yaml files
+kubectl apply -f filename.yaml
+# Ex:
+# kubectl apply -f mywebapp.yaml
+
+# 2.5, Deleting pod for if any error facing | It will launch another one pod automatically 
+kubectl delete pod Pod_Name
+# EX:
+# kubectl delete pod webapp-6f77744cbb-p8s4t
+
+# 2.6, want to change pod ingress  or Digress edit he replicas values and apply in yaml file
+replicas: 5
+# Ex:
+# kubectl apply -f filename.yaml
+
+# 2.7, edit One more Options to change the replicas or any other option
+kubectl edit deploy imagename
+# Ex:
+# kubectl edit deploy webapp
+
+# 2.8, Copy a file from yaml format 
+kubectl get deploy webapp -o yaml 
+
+# 2.9, get the Details, pods where it running
+kubectl get pods -o wide
+
+# 2.10, Delete the Deployment application in Kubectl
+kubectl delete deployment name
+Ex:
+kubectl delete deployment.apps/webapp 
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 
+# 3, Namespace (It will create multiple environment on single cluster)
+
+# 3.0, Check the namespace Running
+kubectl get ns
+
+# 3.1, check the specify namespace running pods and svc
+kubectl -n namespace_name get pods or services
+EX:
+kubectl -n kube-node-lease get pods
+
+# 3.2, check all the namespace in single command
+watch kubectl get pods --all-namespaces
+
+# 3.3, get details for all pods single command
+kubectl get pod -A
+
+# 3.4, get details for all svc single command
+kubectl get svc -A
+
+# 3.5, Create namespace (It will create multiple environment on single cluster)
+
+	# 3.5.0 creating name space syntax should come on (vi namespace.yaml) file
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: resume
+ 
+	# 3.5.1 Apply name space on kubectl
+	kubectl apply -f namespace.yaml
+
+# 3.6, check particular name space pods or svc same step on 3.1
+kubectl get svc -n resume
+
+# 3.7, get the Details, pods where it running
+kubectl get pod -n resume -o wide
+
+# 3.8, Delete the deployment
+kubectl delete deployment.apps/knote -n Saravanan
+kubectl delete deployment.apps/mongo -n Saravanan
+
+# 3.9, Delete the namespace
+kubectl delete namespace Saravanan
+to verify
+kubectl get ns
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# 4, Secrets and calling secret through env and Volumes
+
+# 4.0, create secrets yaml file
+
+vi db_secrets.yaml
+
+apiVersion: v1
+kind: Secret
+metadata:
+ name: mysql-cred
+type: Opaque
+data:
+ MYSQL_ROOT_PASSWORD: c2FyYXZhbmFu
+ MYSQL_USER: c2RsMDlAZGV2
+ MYSQL_PASSWORD: YWRtaW4=
+
+	# 4.0.1 Use below command and generate the code
+	echo -n "saravanan" | base64
+	EX:
+	MYSQL_ROOT_PASSWORD: saravanan
+ 	MYSQL_USER: sdl09@dev
+ 	MYSQL_PASSWORD: admin
+
+# 4.1, check the secrets available 
+kubectl get secrets
+
+# 4.2, apply kubectl
+kubectl apply -f db_secrets.yaml
+
+# 4.3, describe the secrets
+kubectl describe secrets mysql-cred
+
+# 4.4, Check the password
+kubectl get secret mysql-cred -o jsonpath='{.data.MYSQL_USER}' | base64 --decode
+
+# 4.5 Create sample yaml file
+vi mysql-deploy-env.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mariadb
+  name: mariadb-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:   # Fixed Typo
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - name: mariadb
+        image: docker.io/mariadb:10.4
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mysql-cred
+                key: MYSQL_ROOT_PASSWORD
+        ports:
+        - containerPort: 3306
+          protocol: TCP  # Fixed Typo
+
+# 4.6, Apply the Deployment
+kubectl apply -f mysql-deploy-env.yaml 
+
+# 4.7, Check the pod
+kubectl get pods
+	# 4.7.0, Login to Pods
+	kubectl exec -it podname /bin/bash
+	kubectl exec -it mariadb-deployment-656576c9f5-sjbdm /bin/bash	
+	
+	# 4.7.1 you will Root password what we set on secrets same password will get
+	env
+
+	# 4.7.2 Check the Database
+	mysql -uroot -psaravanan -e 'show databases;'
+		-> -uroot for user name
+		-> -psaravanan for password if type any other name -pram
+		-> -e Executes the query
+
+	# 4.7.3 Other option
+	 mysql -uroot -p$MYSQL_ROOT_PASSWORD -e 'show databases;'
+
+# 4.8, Using volumes to access the secret
+vi mysql-deploy-env-vol.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mariadb
+  name: mariadb-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - name: mariadb
+        image: docker.io/mariadb:10.4
+        env:
+         - name: MYSQL_ROOT_PASSWORD
+           valueFrom:
+             secretKeyRef:
+               name: mysql-cred
+               key: MYSQL_ROOT_PASSWORD
+        ports:
+        - containerPort: 3306
+          protocol: TCP
+        volumeMounts:
+        - name: newsecret
+          mountPath: "/etc/newsecret"
+          readOnly: true
+      volumes:  # ✅ This should be at the same level as `containers`
+      - name: newsecret
+        secret:
+          secretName: mysql-cred
+
+	# 4.8.0 apply the yaml file
+	kubectl apply -f mysql-deploy-env-vol.yaml
+
+	# 4.8.1 Check the pod and login
+	kubectl get pod
+	kubectl exec -it mariadb-deployment-65b9d95bb7-kd8zd /bin/bash
+	
+	# 4.8.2 Check the volume
+	df -h
+	# get the secret directory
+	ls /etc/newsecret
+	# get inside all the secret passwords
+
+# 4.9, To delete the deployment 
+kubectl delete deployment.apps/mariadb-deployment
+
+# 4.10 Delete the secret mysql-cred
+kubectl get secret
+kubectl delete secret mysql-cred
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# 5 Kubernetes Configmap (It One of secret management)
+
+# 5.0 to check already running configmap
+kubectl get cm
+
+# 5.1 Creating new config file (below syntax for Sql Database)
+vi mysql-extra.config
+
+[mysqld]
+max_allowed_packet = 64M
+
+	# 5.1.0 create the cm using commands
+	kubectl create cm mysql-extra --from-file=mysql-extra.config
+
+	# 5.1.1 to verify
+	kubectl get cm
+	
+	# 5.1.2 Describe and check
+	
+# 5.2 Running yaml script
+vi mysql-deploy-env-vol-cm.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mariadb
+  name: mariadb-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - name: mariadb
+        image: docker.io/mariadb:10.4
+        env:
+         - name: MYSQL_ROOT_PASSWORD
+           valueFrom:
+             secretKeyRef:
+               name: mysql-cred
+               key: MYSQL_ROOT_PASSWORD
+        ports:
+        - containerPort: 3306
+          protocol: TCP
+        volumeMounts:
+        - name: newcm
+          mountPath: /etc/mysql/conf.d
+          readOnly: true
+      volumes:  # ✅ This should be at the same level as `containers`
+      - name: newcm
+        configMap:
+          name: mysql-extra
+
+	# 5.2.1 Apply on yaml script
+	kubectl apply -f mysql-deploy-env-vol-cm.yaml
+
+	# 5.2.2 Check the pod
+	kubectl get pod
+	
+	# 5.2.3 login the pod
+	kubectl exec -it mariadb-deployment-5b4cfd7b78-7f9d2 bin/bash
+
+	# 5.2.4 check the cm mount path
+	cat /etc/mysql/conf.d/mysql-extra.config
+	
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# 6 Volumes 
+
+# 6.1 Creating Volumes and mount containers (Container 1 nginx mounting volume /mnt/data)
+Note : If giving multiple pod insides multi container only able to access, out next pod it will not accessable 
+
+vi volumes-mount-container1.yaml (Concept Data mounted on 1st container only)
+
+        ==================================
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ebay-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:  # ✅ Corrected indentation
+      environment: dev
+      app: ebay
+  template:
+    metadata:
+      labels:
+        environment: dev
+        app: ebay
+    spec:
+      volumes: # Syntax start volume have to register 
+      - name: volume
+        hostPath:
+          path: /mnt/data
+      containers:
+      - name: container1-nginx
+        image: nginx
+        volumeMounts:
+        - name: volume  # ✅ Call the volums
+          mountPath: "/var/nginx-data"
+      - name: container2-tomcat
+        image: tomcat
+
+        ==================================
+
+	# 6.2.0 apply the yaml script
+	kubectl apply -f volumes-mount-container1.yaml
+
+	# 6.2.1 Check Where the container running
+	kubectl get pods -o wide
+
+	# 6.2.2 login the container and check 
+	kubectl exec -it pod_name -c container_name /bin/bash
+	EX
+	kubectl exec -it ebay-app-69dc5ffb9f-gdzv8 -c container1-nginx /bin/bash
+
+	# 6.2.3 Check the volume 
+	df -m
+	# Creating some file
+	cd /var/nginx-data
+	touch test1 test2 test3
+
+# 6.3 Attaching the Volume on Another Container (Container 2 tomcat mounting volume /mnt/data)
+
+vi vol-mnt-cont2.yaml (It will shared data on 2 containers)
+
+        ==================================
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ebay-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      environment: dev
+      app: ebay
+  template:
+    metadata:
+      labels:
+        environment: dev
+        app: ebay
+    spec:
+      volumes:
+      - name: volume
+        hostPath:
+          path: /mnt/data
+      containers:
+      - name: container1-nginx
+        image: nginx
+        volumeMounts: # ✅ Call the volums
+        - name: volume 
+          mountPath: "/var/nginx-data"
+      - name: container2-tomcat
+        image: tomcat
+        volumeMounts:  # ✅ Call the volums
+        - name: volume
+          mountPath: "/var/tomcat-data"
+
+        ==================================
+
+	# 6.3.0 apply the yaml script
+	kubectl apply -f vol-mnt-cont2.yaml
+
+	# 6.3.1 Check Where the container running
+	kubectl get pods -o wide
+
+	# 6.3.2 login the container and check 
+	kubectl exec -it pod_name -c container_name /bin/bash
+	EX
+	kubectl exec -it ebay-app-69dc5ffb9f-mcb69 -c container2-tomcat /bin/bash
+
+	# 6.3.3 Check the volume 
+	df -m
+	# Check same file
+	cd /var/nginx-data
+	ls *
+	test1 test2 test3
+
+# 6.4 add the volume on suppurate containers  
+
+vi vol-mnt-par-vol.yaml (It will shared data on Vol_mount 2:2 containers)
+
+        ==================================
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ebay-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      environment: dev
+      app: ebay
+  template:
+    metadata:
+      labels:
+        environment: dev
+        app: ebay
+    spec:
+      volumes:
+      - name: volume1
+        hostPath:
+          path: /mnt/data
+      volumes:
+      - name: volume2
+        hostPath:
+          path: /mnt/data
+      containers:
+      - name: container1-nginx
+        image: nginx
+        volumeMounts: # ✅ Call the volums
+        - name: volume1 
+          mountPath: "/var/nginx-data"
+      - name: container2-tomcat
+        image: tomcat
+        volumeMounts:  # ✅ Call the volums
+        - name: volume2
+          mountPath: "/var/tomcat-data"
+
+	==================================
+
+	# 6.4.0 apply the yaml script
+	kubectl apply -f vol-mnt-par-vol.yaml
+
+	# 6.4.1 Check Where the container running
+	kubectl get pods -o wide
+
+	# 6.4.2 login the container and check 
+	kubectl exec -it pod_name -c container_name /bin/bash
+	EX
+	kubectl exec -it ebay-app-69dc5ffb9f-mcb69 -c container2-tomcat /bin/bash
+
+	# 6.4.3 Check the volume 
+	df -m
+
+# 6.5 Create shared volume and mounting the container
+
+	# 6.5.0 Have to create Shared volumes (All connected nodes)
+	mount 192.168.2.11:/vol/mnt/data
+
+	# 6.5.1 Check the volumes
+	df -m
+
+	# 6.5.2 Create yaml file and run
+	
+vi vol-mnt-nfs-vol.yaml
+
+=================================================
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ebay-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      environment: dev
+      app: ebay
+  template:
+    metadata:
+      labels:
+        environment: dev
+        app: ebay
+    spec:
+      volumes:
+      - name: volume
+        hostPath:
+          path: /mnt/data
+      containers:
+      - name: container1-nginx
+        image: nginx
+        volumeMounts: # ✅ Call the volums
+        - name: volume 
+          mountPath: "/var/nginx-data"
+      - name: container2-tomcat
+        image: tomcat
+        volumeMounts:  # ✅ Call the volums
+        - name: volume
+          mountPath: "/var/tomcat-data"
+
+	=======================================================
+
+	# 6.5.0 apply the yaml script
+	kubectl apply -f vol-mnt-nfs-vol.yaml
+
+	# 6.5.1 Check Where the container running
+	kubectl get pods -o wide
+
+	# 6.5.2 login the container and check 
+	kubectl exec -it pod_name -c container_name /bin/bash
+	EX
+	kubectl exec -it ebay-app-69dc5ffb9f-mcb69 -c container2-tomcat /bin/bash
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# 7 Kubernetes Persistent Volumes & Claims
+
+
+
+
+
+
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# 8 Kubernetes Performance Monitoring
+
+# 8.0 Go to Kubernetes matrices git hub location location
+https://github.com/kubernetes-sigs/metrics-server
+
+# 8.1 Availability version Kubernetes v1.21+
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/high-availability-1.21+.yaml  
+
+# 8.2 Check the status service running or not
+kubectl get ns
+
+# 8.3 It will System related content so it run inside kube-system inside it called one of the pod
+kubectl -n get pods
+
+# 8.4 there can able to check the service called metrics-services 
+kubectl -n kube-system get pods
+
+# 8.5 check the memory usages
+kubectl top node slavevm1
+
+# 8.6 Check the full details
+kubectl describe node slavevm1
+
+# 8.7 Check the pod
+kubectl desctibe pod pod_name
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# 9 Kubernetes CPU & Memory Resource Allocation
+
+# 9.0 before any pod is running describe the pods
+kubectl describe pods pods_name
+
+# 9.1 Checking nodes
+kubectl describe nodes nodes_name
+
+# 9.2 Edit the yaml file
+vi eby-reorce.yaml
+
+=======================================
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ebay-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      environment: dev
+      app: ebay
+  template:
+    metadata:
+      labels:
+        environment: dev
+        app: ebay
+    spec:
+      containers:
+      - name: container1-nginx
+        image: nginx
+        resources:  # ✅ Corrected placement
+          requests:
+            cpu: 10m
+            memory: 512Mi
+          limits:
+            cpu: 20m
+            memory: 1024Mi
+
+=============================================
+
+# 9.3 Apply 
+kubectl apply -f eby-reorce.yaml
+
+# 9.4 Check the resource (inside will get Details)
+kubectl describe pods pod_name
+
+# 9.5 Decribe the Nodes Resours
+kubectl describe nodes slavevm03
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# 10 Kubernetes Ingress Explained with Examples
+
+
+
+	Want to uninstall 
+	kubeadm reset
+	sudo apt-get purge kubeadm kubectl kubelet kubernetes-cni kube*   
+	sudo apt-get autoremove  
+	sudo rm -rf ~/.kube
+
+#4.8, check the Database
+
+

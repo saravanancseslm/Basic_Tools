@@ -17,7 +17,15 @@ what is arcture of application
 
 what soa recorda
 
+what is kafka 
+
 what i c2 server
 
 how will you understand your appication using devps
+
+what is api gateway,
+
+what is stateless in k8
+
+
 

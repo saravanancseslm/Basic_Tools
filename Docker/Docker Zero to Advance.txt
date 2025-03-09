@@ -4,7 +4,7 @@ youtube referral in tamil :  https://www.youtube.com/redirect?event=video_descri
 
 Referal website : https://www.learnitguide.net/
 
-----------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # 1, Installing on Ubuntu
 
@@ -32,7 +32,7 @@ Referal website : https://www.learnitguide.net/
 	# 1.9 Check Docker status
 	systemctl status docker
 
--------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # 2, Docker Essentials | Docker Basics | Docker CLI | --help
 
@@ -130,7 +130,7 @@ Referal website : https://www.learnitguide.net/
 
 NOTE : use letter http for container names | httpd for image name
 
-------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # 3, Docker images
 
@@ -155,7 +155,7 @@ NOTE : use letter http for container names | httpd for image name
 
 	# 3.7 remove images on single command
 	docker rmi -f $(sudo docker images -a -q) | # Like declaring variables
-	docker images -a -q | # It will list all ideal stopped containers
+	docker images -a -q | # It will list all ideal stopped images
 
 	# 3.8 creating container to docker-image
 
@@ -181,7 +181,7 @@ NOTE : use letter http for container names | httpd for image name
 
 		# 3.9.3 docker info | it will show which repository login all details
 
-------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # 4 Create or Customize Docker images using Dockerfile | # Website Reference : https://www.learnitguide.net/2018/06/dockerfile-explained-with-examples-of.html
 
@@ -283,7 +283,8 @@ NOTE : use letter http for container names | httpd for image name
 	docker bulid -t webapp -f /home/root1/Desktop/dockerfile
 
 
-------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 # 5 Docker Networking Default ip creating auto assign on 172.17.0.0
 
 	# 5.0 To run the ubuntu container
@@ -317,7 +318,7 @@ NOTE : use letter http for container names | httpd for image name
 	# 5.6 it will not get any container ip will not work inside host also
 	docker run -d -it --name os2 --network=none ubuntu
 
-------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # 6 Docker Volume
 
@@ -352,7 +353,7 @@ NOTE : use letter http for container names | httpd for image name
 	# 6.9 Remove unused volume prune
 	docker volume prune 
 
----------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # 7 Docker Swarm
 
@@ -400,7 +401,7 @@ NOTE : use letter http for container names | httpd for image name
 	# 7.8 Removing Docker Service swarm containers
 	docker service rm webapp
 
-------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # 8 Docker Compose | Running yaml or yml file 
 
@@ -438,7 +439,53 @@ services:
     container_name: knote-mongo
     image: mongo
 
-------------------------------------------------------------------------------------------------------------------------------
+	# 8.4 Run the docker-compose with memory allocation
+
+version: "3.7"
+services:
+  app:
+    container_name: knote-app
+    image: learnitguide/knotejs:1.0
+    environment:
+           MONGO_URL: mongodb://mongo_db_host:27017/dev
+    ports:
+     - "80:3000"
+    depends_on:
+     - mongo
+    links:
+      - mongo:mongo_db_host
+    deploy:
+	resources:
+	    limits:
+	       cpus: "0.50"
+	       memory: "1024M"
+	     reservations:
+		cpus: "0.25"
+		memory: "256M"
+  mongo:
+    container_name: knote-mongo
+    image: mongo
 	
+	# 8.5 Run the memory allocation yaml file 
+	docker stack deploy --compose-file docker-compose.yaml teststack
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# 9 Memory Resource Allocation
+
+	# 9.0 Memory reservation minimum to maximum 
+	docker run --memory-reservation=256m -m 512m -d --name webapp -p 80:80 httpd
+
+	# 9.1 inspect the container will get all details
+	docker inspect webapp
+
+	# 9.2 CPU limit  
+	docker run --cpu=1.2 -d --name webapp -p 80:80 httpd
+
+	# 9.3 CPU Shares
+	docker run --cpu-shares=1000 --cpus=1 -d --name web5 httpd
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Sobha@4321

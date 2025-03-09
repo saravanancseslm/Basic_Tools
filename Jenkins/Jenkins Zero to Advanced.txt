@@ -1,0 +1,74 @@
+Jenkins Zero to Advanced
+
+# 1.0 Jenkins Installation to confirm 
+dpkg -l | grep -I jenkins
+
+# 1.1 Once installation Done 
+systemctl enable Jenkins && systemctl start Jenkins
+
+# 1.2 able to access on Browser
+host ip:8080
+
+# 1.3 Check the firewall
+ufw status
+if it blocked
+ufw allow 8080
+
+# 1.4 check the users
+cat /etc/passwd
+
+# 1.5 It will run on Linux superette users now will set password
+passwd Jenkins
+sdl09@dev	
+sdl09@dev
+
+# 1.6 will update the sudoers root privilege because if sudo related any task will send it stop 
+vi /etc/sudoers
+Copy and past on root and edit Jenkins
+jenkins ALL=(ALL:ALL) NOPASSWD: ALL
+
+# 1.7 Execute some operation it will work with out passwd
+sudo fdisk -l 
+
+# 1.8 Docker related any job need to run have to provide permission
+sudo vim /etc/group
+docker:x:118:jenkins  (Docker group have to add jenkins)
+	
+	Docker Builder URL (Configuration)
+	Docker server REST API URL
+	1.8.1 After remote host API need to enable [service] ExecStart= ...containerd.sock add below command
+	 -H unix:///var/run/docker.sock
+	
+	1.8.2 Restart the docker service
+	systemctl restart docker
+	systemctl daemon-reload
+
+	1.8.3 Restart Jenkins service
+	systemctl restart jenkins
+	
+	1.8.4 Jenkins(ui) have to do
+	go to --> manage Jenkins --> System --> Docker Builder Docker URL Docker server REST API URL
+	Past Docker the url 
+	unix:///var/run/docker.sock --> Test Connection
+	
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2, Security Management
+
+# 2.0 Login the Jenkins creation 
+
+# Want to change LDAP or Unix user/group 
+
+go to --> Manage Jenkins --> Security --> Security Realm --> Unix user/group database and Test(if come error have to allow on Jenkins server sudo vi /etc/group --> edit on shadow:x:42:jenkins)
+sudo systemctl restart Jenkins 
+#Using same steps able to login Jenkins server on Jenkins server credential
+cat /etc/passwd
+
+# 2.1 Creating user for Jenkins
+
+go to --> Manage Jenkins --> Security --> Users --> Create Users --> Fill all details and create
+Once it created list will come 
+		Go to gear icon settings --> there we can mange the option for the users
+ 
+
+

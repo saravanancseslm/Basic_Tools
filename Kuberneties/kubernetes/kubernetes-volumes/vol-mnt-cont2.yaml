@@ -1,0 +1,32 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: ebay-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      environment: dev
+      app: ebay
+  template:
+    metadata:
+      labels:
+        environment: dev
+        app: ebay
+    spec:
+      volumes:
+      - name: volume
+        hostPath:
+          path: /mnt/data
+      containers:
+      - name: container1-nginx
+        image: nginx
+        volumeMounts:
+        - name: volume
+          mountPath: "/var/nginx-data"
+      - name: container2-tomcat
+        image: tomcat
+        volumeMounts:  # ✅ Corrected indentation
+        - name: volume
+          mountPath: "/var/tomcat-data"
+

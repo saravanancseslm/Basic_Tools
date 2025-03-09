@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mariadb
+  name: mariadb-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - name: mariadb
+        image: docker.io/mariadb:10.4
+        env:
+         - name: MYSQL_ROOT_PASSWORD
+           valueFrom:
+             secretKeyRef:
+               name: mysql-cred
+               key: MYSQL_ROOT_PASSWORD
+        ports:
+        - containerPort: 3306
+          protocol: TCP
+        volumeMounts:
+        - name: newsecret
+          mountPath: "/etc/newsecret"
+          readOnly: true
+      volumes:  # ✅ This should be at the same level as `containers`
+      - name: newsecret
+        secret:
+          secretName: mysql-cred
+
